@@ -1,6 +1,15 @@
 import 'package:corso/features/tasks/task.dart';
 import 'package:flutter/material.dart';
 
+enum TaskFormAction { save, delete }
+
+class TaskFormResult {
+  final TaskFormAction action;
+  final Task? task;
+
+  TaskFormResult({required this.action, this.task});
+}
+
 class TaskFormPage extends StatefulWidget {
   final Task? task;
 
@@ -44,7 +53,36 @@ class _TaskFormPageState extends State<TaskFormPage> {
       completed: widget.task?.completed ?? false,
     );
 
-    Navigator.of(context).pop(task);
+    Navigator.of(context)
+        .pop(TaskFormResult(action: TaskFormAction.save, task: task));
+  }
+
+  Future<void> _deleteTask() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina task'),
+        content: const Text('Sei sicuro di voler eliminare questo task?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    if (!mounted) return;
+
+    Navigator.of(context).pop(TaskFormResult(action: TaskFormAction.delete));
   }
 
   @override
@@ -84,6 +122,18 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 onPressed: _saveTask,
                 child: Text(widget.task == null ? 'Salva' : 'Aggiorna'),
               ),
+
+              if (widget.task != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: _deleteTask,
+                    child: const Text('Elimina task'),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

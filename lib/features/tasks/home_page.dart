@@ -31,16 +31,16 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<void> _openTaskForm() async {
-    final task = await Navigator.of(
-      context,
-    ).push<Task>(MaterialPageRoute(builder: (context) => const TaskFormPage()));
+    final result = await Navigator.of(context).push<TaskFormResult>(
+      MaterialPageRoute(builder: (context) => const TaskFormPage()),
+    );
 
-    if (task == null) {
+    if (result?.task == null) {
       return;
     }
 
     setState(() {
-      _tasks.add(task);
+      _tasks.add(result!.task!);
     });
   }
 
@@ -52,22 +52,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _editTask(int index) async {
-    final updatedTask = await Navigator.of(context).push<Task>(
+    final result = await Navigator.of(context).push<TaskFormResult>(
       MaterialPageRoute(
-          builder: (context) => TaskFormPage(
-              task: _tasks[index]
-          ),
-      )
+        builder: (context) => TaskFormPage(task: _tasks[index]),
+      ),
     );
 
-    if (updatedTask == null) {
+    if (result == null) {
       return;
     }
 
-    setState(() {
-      _tasks[index] = updatedTask;
-    });
+    if (result.action == TaskFormAction.delete) {
+      setState(() {
+        _tasks.removeAt(index);
+      });
 
+      return;
+    }
+
+    if (result.task != null) {
+      setState(() {
+        _tasks[index] = result.task!;
+      });
+    }
   }
 
   @override
