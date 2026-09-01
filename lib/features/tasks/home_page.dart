@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TaskFilter _selectedFilter = TaskFilter.all;
   final TaskRepository _repository = TaskRepository();
-  late List<Task> _tasks = [];
+  List<Task> _tasks = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -116,49 +116,45 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               'I miei task',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 4),
 
             Text(
               '$_completedTasks di ${_tasks.length} completati',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            Wrap(
-              spacing: 8,
-              children: [
-                ChoiceChip(
-                  label: const Text('Tutti'),
-                  selected: _selectedFilter == TaskFilter.all,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedFilter = TaskFilter.all;
-                    });
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('In sospeso'),
-                  selected: _selectedFilter == TaskFilter.pending,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedFilter = TaskFilter.pending;
-                    });
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('Completati'),
-                  selected: _selectedFilter == TaskFilter.completed,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedFilter = TaskFilter.completed;
-                    });
-                  },
-                ),
-              ],
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<TaskFilter>(
+                segments: const [
+                  ButtonSegment(
+                    value: TaskFilter.all,
+                    label: Text('Tutti'),
+                  ),
+                  ButtonSegment(
+                    value: TaskFilter.pending,
+                    label: Text('Da fare'),
+                  ),
+                  ButtonSegment(
+                    value: TaskFilter.completed,
+                    label: Text('Fatti'),
+                  ),
+                ],
+                selected: {_selectedFilter},
+                onSelectionChanged: (selection) {
+                  setState(() {
+                    _selectedFilter = selection.first;
+                  });
+                },
+              ),
             ),
 
             const SizedBox(height: 16),

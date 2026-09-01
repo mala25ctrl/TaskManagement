@@ -62,7 +62,10 @@ class TaskCard extends StatelessWidget {
               Text(
                 task.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: task.completed
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.55)
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
