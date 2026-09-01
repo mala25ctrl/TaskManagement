@@ -2,7 +2,9 @@ import 'package:corso/features/tasks/task.dart';
 import 'package:flutter/material.dart';
 
 class TaskFormPage extends StatefulWidget {
-  const TaskFormPage({super.key});
+  final Task? task;
+
+  const TaskFormPage({super.key, this.task});
 
   @override
   State<TaskFormPage> createState() => _TaskFormPageState();
@@ -11,8 +13,17 @@ class TaskFormPage extends StatefulWidget {
 class _TaskFormPageState extends State<TaskFormPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.task?.title ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.task?.description ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -27,9 +38,10 @@ class _TaskFormPageState extends State<TaskFormPage> {
     }
 
     final task = Task(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: widget.task?.id ?? DateTime.now().millisecondsSinceEpoch,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
+      completed: widget.task?.completed ?? false,
     );
 
     Navigator.of(context).pop(task);
@@ -38,7 +50,9 @@ class _TaskFormPageState extends State<TaskFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nuovo Task')),
+      appBar: AppBar(
+        title: Text(widget.task == null ? 'Nuovo Task' : 'Modifica Task'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -68,7 +82,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
 
               ElevatedButton(
                 onPressed: _saveTask,
-                child: const Text('Salva'),
+                child: Text(widget.task == null ? 'Salva' : 'Aggiorna'),
               ),
             ],
           ),

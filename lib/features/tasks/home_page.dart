@@ -51,6 +51,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _editTask(int index) async {
+    final updatedTask = await Navigator.of(context).push<Task>(
+      MaterialPageRoute(
+          builder: (context) => TaskFormPage(
+              task: _tasks[index]
+          ),
+      )
+    );
+
+    if (updatedTask == null) {
+      return;
+    }
+
+    setState(() {
+      _tasks[index] = updatedTask;
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,6 +86,7 @@ class _HomePageState extends State<HomePage> {
           return TaskCard(
             task: task,
             onToggleCompleted: () => _toggleTaskCompleted(index),
+            onTap: () => _editTask(index),
           );
         },
       ),

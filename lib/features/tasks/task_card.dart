@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class TaskCard extends StatelessWidget {
   final Task task;
   final VoidCallback onToggleCompleted;
+  final VoidCallback onTap;
 
   const TaskCard({
     super.key,
     required this.task,
     required this.onToggleCompleted,
+    required this.onTap,
   });
 
   @override
@@ -29,6 +31,7 @@ class TaskCard extends StatelessWidget {
         ),
         subtitle: Text(task.description),
         trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
     );
   }
