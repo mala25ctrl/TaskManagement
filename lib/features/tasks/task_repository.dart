@@ -1,55 +1,68 @@
 import 'package:corso/features/tasks/task.dart';
+import 'package:corso/features/tasks/task_database.dart';
 
 class TaskRepository {
-  final List<Task> _tasks = [
-    const Task(
-      id: 1,
-      title: 'Studiare Flutter',
-      description: 'Completare la HomePage',
-    ),
-    const Task(
-      id: 2,
-      title: 'Fare esercizio',
-      description: '30 minuti di allenamento',
-      completed: true,
-    ),
-    const Task(
-      id: 3,
-      title: 'Leggere',
-      description: 'Leggere almeno 20 pagine',
-    ),
-  ];
+  final TaskDatabase _database = TaskDatabase.instance;
 
-  List<Task> getAll() {
-    return List.unmodifiable(_tasks);
+  Future<List<Task>> getAll() async{
+    final db = await _database.database;
+    
+    final maps = await db.query('tasks');
+    
+    return maps
+        .map((map) => Task.fromMap(map))
+        .toList();
   }
 
-  void add(Task task) {
-    _tasks.add(task);
+  Future<void> add(Task task) async {
+    final db = await _database.database;
+
+    await db.insert(
+      'tasks',
+      task.toMap(),
+    );
   }
 
-  void update(Task task) {
-    final index = _tasks.indexWhere((t) => t.id == task.id);
+  Future<void> update(Task task) async {
+    final db = await _database.database;
 
-    if (index == -1) {
+    await db.update(
+      'tasks',
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
+  }
+
+  Future<void> delete(int id) async {
+    final db = await _database.database;
+
+    await db.delete(
+      'tasks',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> toggleCompleted(int id) async {
+    final db = await _database.database;
+
+    final maps = await db.query(
+      'tasks',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (maps.isEmpty) {
       return;
     }
 
-    _tasks[index] = task;
+    final task = Task.fromMap(maps.first);
+
+    final updatedTask = task.copyWith(completed: !task.completed);
+
+    await update(updatedTask);
   }
 
-  void delete(int id) {
-    _tasks.removeWhere((t) => t.id == id);
-  }
-
-  void toggleCompleted(int id) {
-    final index = _tasks.indexWhere((t) => t.id == id);
-
-    if (index == -1) {
-      return;
-    }
-
-    final task = _tasks[index];
-    _tasks[index] = task.copyWith(completed: !task.completed);
-  }
 }

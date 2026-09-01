@@ -16,18 +16,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TaskFilter _selectedFilter = TaskFilter.all;
   final TaskRepository _repository = TaskRepository();
-
-  late List<Task> _tasks;
+  late List<Task> _tasks = [];
 
   @override
   void initState() {
     super.initState();
-    _tasks = _repository.getAll();
+    _loadTasks();
   }
 
-  void _refreshTasks() {
+  Future<void> _loadTasks() async {
+    final tasks = await _repository.getAll();
+
+    if (!mounted) return;
+
     setState(() {
-      _tasks = _repository.getAll();
+      _tasks = tasks;
     });
   }
 
@@ -40,13 +43,13 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    _repository.add(result!.task!);
-    _refreshTasks();
+    await _repository.add(result!.task!);
+    await _loadTasks();
   }
 
-  void _toggleTaskCompleted(Task task) {
-    _repository.toggleCompleted(task.id);
-    _refreshTasks();
+  Future<void> _toggleTaskCompleted(Task task) async {
+    await _repository.toggleCompleted(task.id);
+    await _loadTasks();
   }
 
   Future<void> _editTask(Task task) async {
@@ -59,14 +62,14 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (result.action == TaskFormAction.delete) {
-      _repository.delete(task.id);
-      _refreshTasks();
+      await _repository.delete(task.id);
+      await _loadTasks();
       return;
     }
 
     if (result.task != null) {
-      _repository.update(result.task!);
-      _refreshTasks();
+      await _repository.update(result.task!);
+      await _loadTasks();
     }
   }
 
