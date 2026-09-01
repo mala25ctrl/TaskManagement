@@ -1,6 +1,7 @@
 import 'package:corso/features/tasks/task.dart';
 import 'package:corso/features/tasks/task_card.dart';
 import 'package:corso/features/tasks/task_form_page.dart';
+import 'package:corso/features/tasks/task_repository.dart';
 import 'package:flutter/material.dart';
 
 enum TaskFilter { all, pending, completed }
@@ -14,24 +15,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TaskFilter _selectedFilter = TaskFilter.all;
-  final List<Task> _tasks = [
-    const Task(
-      id: 1,
-      title: 'Studiare Flutter',
-      description: 'Completare la HomePage',
-    ),
-    const Task(
-      id: 2,
-      title: 'Fare esercizio',
-      description: '30 minuti di allenamento',
-      completed: true,
-    ),
-    const Task(
-      id: 3,
-      title: 'Leggere',
-      description: 'Leggere alemno 20 pagine',
-    ),
-  ];
+  final TaskRepository _repository = TaskRepository();
+
+  late List<Task> _tasks;
+
+  @override
+  void initState() {
+    super.initState();
+    _tasks = _repository.getAll();
+  }
+
+  void _refreshTasks() {
+    setState(() {
+      _tasks = _repository.getAll();
+    });
+  }
 
   Future<void> _openTaskForm() async {
     final result = await Navigator.of(context).push<TaskFormResult>(
@@ -42,21 +40,13 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    setState(() {
-      _tasks.add(result!.task!);
-    });
+    _repository.add(result!.task!);
+    _refreshTasks();
   }
 
   void _toggleTaskCompleted(Task task) {
-    final index = _tasks.indexWhere((t) => t.id == task.id);
-
-    if (index == -1) {
-      return;
-    }
-
-    setState(() {
-      _tasks[index] = task.copyWith(completed: !task.completed);
-    });
+    _repository.toggleCompleted(task.id);
+    _refreshTasks();
   }
 
   Future<void> _editTask(Task task) async {
@@ -68,24 +58,15 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final index = _tasks.indexWhere((t) => t.id == task.id);
-
-    if (index == -1) {
-      return;
-    }
-
     if (result.action == TaskFormAction.delete) {
-      setState(() {
-        _tasks.removeAt(index);
-      });
-
+      _repository.delete(task.id);
+      _refreshTasks();
       return;
     }
 
     if (result.task != null) {
-      setState(() {
-        _tasks[index] = result.task!;
-      });
+      _repository.update(result.task!);
+      _refreshTasks();
     }
   }
 
