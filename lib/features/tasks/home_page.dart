@@ -1,15 +1,48 @@
 import 'package:corso/features/tasks/task.dart';
 import 'package:corso/features/tasks/task_card.dart';
+import 'package:corso/features/tasks/task_form_page.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  static final List<Task> _tasks = [
-    Task(id: 1, title: 'Task 1', description: 'Description 1'),
-    Task(id: 2, title: 'Task 2', description: 'Description 2', completed: true),
-    Task(id: 3, title: 'Task 3', description: 'Description 3'),
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final List<Task> _tasks = [
+    const Task(
+      id: 1,
+      title: 'Studiare Flutter',
+      description: 'Completare la HomePage',
+    ),
+    const Task(
+      id: 2,
+      title: 'Fare esercizio',
+      description: '30 minuti di allenamento',
+      completed: true,
+    ),
+    const Task(
+      id: 3,
+      title: 'Leggere',
+      description: 'Leggere alemno 20 pagine',
+    ),
   ];
+
+  Future<void> _openTaskForm() async {
+    final task = await Navigator.of(
+      context,
+    ).push<Task>(MaterialPageRoute(builder: (context) => const TaskFormPage()));
+
+    if (task == null) {
+      return;
+    }
+
+    setState(() {
+      _tasks.add(task);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +61,7 @@ class HomePage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _openTaskForm,
         child: const Icon(Icons.add),
       ),
     );
