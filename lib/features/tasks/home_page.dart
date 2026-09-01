@@ -77,25 +77,52 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  int get _completedTasks {
+    return _tasks.where((task) => task.completed).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('TaskFlow')),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _tasks.length,
-        separatorBuilder: (context, index) {
-          return const SizedBox(height: 12);
-        },
-        itemBuilder: (context, index) {
-          final task = _tasks[index];
+      body: Padding(
+          padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'I miei task',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
 
-          return TaskCard(
-            task: task,
-            onToggleCompleted: () => _toggleTaskCompleted(index),
-            onTap: () => _editTask(index),
-          );
-        },
+            const SizedBox(height: 4),
+
+            Text(
+              '$_completedTasks di ${_tasks.length} completati',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+
+            const SizedBox(height: 24),
+
+            Expanded(
+                child: ListView.separated(
+                    itemBuilder: (context, index){
+                      final task = _tasks[index];
+
+                      return TaskCard(
+                        task: task,
+                        onToggleCompleted: () => _toggleTaskCompleted(index),
+                        onTap: () => _editTask(index),
+                      );
+                    },
+                    separatorBuilder: (context, index){
+                      return const SizedBox(height: 12);
+                    },
+                    itemCount: _tasks.length
+                )
+            )
+          ],
+        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openTaskForm,
