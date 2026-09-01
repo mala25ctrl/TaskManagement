@@ -17,6 +17,8 @@ class _HomePageState extends State<HomePage> {
   TaskFilter _selectedFilter = TaskFilter.all;
   final TaskRepository _repository = TaskRepository();
   late List<Task> _tasks = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -25,13 +27,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadTasks() async {
-    final tasks = await _repository.getAll();
-
-    if (!mounted) return;
-
     setState(() {
-      _tasks = tasks;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final tasks = await _repository.getAll();
+
+      if (!mounted) return;
+
+      setState(() {
+        _tasks = tasks;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Impossibile caricare i task.';
+      });
+    }
   }
 
   Future<void> _openTaskForm() async {
@@ -147,7 +164,26 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
 
             Expanded(
-              child: _filteredTasks.isEmpty
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage != null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline, size: 64),
+                          const SizedBox(height: 16),
+                          Text(_errorMessage!),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: _loadTasks,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Riprova'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _filteredTasks.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
