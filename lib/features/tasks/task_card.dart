@@ -49,7 +49,8 @@ class TaskCard extends StatelessWidget {
         ),
         title: Text(
           task.title,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
             decoration: task.completed ? TextDecoration.lineThrough : null,
           ),
         ),
@@ -58,30 +59,92 @@ class TaskCard extends StatelessWidget {
           children: [
             if (task.description.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(task.description),
+              Text(
+                task.description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
 
             const SizedBox(height: 8),
 
             Wrap(
               spacing: 8,
-              runSpacing: 4,
+              runSpacing: 6,
               children: [
-                Chip(
-                  label: Text(_priorityLabel()),
-                  visualDensity: VisualDensity.compact,
-                ),
+                _buildPriorityBadge(context),
                 if (dueDateLabel != null)
-                  Chip(
-                    avatar: const Icon(Icons.calendar_today_outlined, size: 16),
-                    label: Text(dueDateLabel),
-                    visualDensity: VisualDensity.compact,
+                  _buildInfoBadge(
+                    context,
+                    icon: Icons.calendar_today_outlined,
+                    label: dueDateLabel,
                   ),
               ],
             ),
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
+      ),
+    );
+  }
+
+  Widget _buildInfoBadge(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14),
+          const SizedBox(width: 5),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriorityBadge(BuildContext context) {
+    Color backgroundColor;
+    Color foregroundColor;
+
+    switch (task.priority) {
+      case TaskPriority.low:
+        backgroundColor = Colors.green.shade50;
+        foregroundColor = Colors.green.shade700;
+        break;
+
+      case TaskPriority.medium:
+        backgroundColor = Colors.orange.shade50;
+        foregroundColor = Colors.orange.shade700;
+        break;
+
+      case TaskPriority.high:
+        backgroundColor = Colors.red.shade50;
+        foregroundColor = Colors.red.shade700;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        _priorityLabel(),
+        style: TextStyle(
+          color: foregroundColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
