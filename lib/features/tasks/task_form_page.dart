@@ -21,6 +21,8 @@ class TaskFormPage extends StatefulWidget {
 
 class _TaskFormPageState extends State<TaskFormPage> {
   final _formKey = GlobalKey<FormState>();
+  TaskPriority _priority = TaskPriority.medium;
+  DateTime? _dueDate;
 
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
@@ -32,6 +34,9 @@ class _TaskFormPageState extends State<TaskFormPage> {
     _descriptionController = TextEditingController(
       text: widget.task?.description ?? '',
     );
+
+    _priority = widget.task?.priority ?? TaskPriority.medium;
+    _dueDate = widget.task?.dueDate;
   }
 
   @override
@@ -51,6 +56,8 @@ class _TaskFormPageState extends State<TaskFormPage> {
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       completed: widget.task?.completed ?? false,
+      priority: _priority,
+      dueDate: _dueDate,
     );
 
     Navigator.of(context)
@@ -85,6 +92,23 @@ class _TaskFormPageState extends State<TaskFormPage> {
     Navigator.of(context).pop(TaskFormResult(action: TaskFormAction.delete));
   }
 
+  Future<void> _selectDueDate() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+    );
+
+    if (selectedDate == null) {
+      return;
+    }
+
+    setState(() {
+      _dueDate = selectedDate;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +138,50 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Descrizione'),
                 maxLines: 4,
+              ),
+
+              const SizedBox(height: 20),
+
+              DropdownButtonFormField(
+                initialValue: _priority,
+                decoration: const InputDecoration(labelText: 'Priorità'),
+                items: const [
+                  DropdownMenuItem(
+                    value: TaskPriority.low,
+                    child: Text('Bassa'),
+                  ),
+                  DropdownMenuItem(
+                    value: TaskPriority.medium,
+                    child: Text('Media'),
+                  ),
+                  DropdownMenuItem(
+                    value: TaskPriority.high,
+                    child: Text('Alta'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    _priority = value;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today_outlined),
+                title: Text(
+                  _dueDate == null
+                      ? 'Nessuna scadenza'
+                      : '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
+                ),
+                trailing: TextButton(
+                  onPressed: _selectDueDate,
+                  child: const Text('Seleziona data'),
+                ),
               ),
 
               const SizedBox(height: 24),
