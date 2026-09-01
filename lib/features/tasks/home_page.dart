@@ -44,6 +44,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _toggleTaskCompleted(int index) {
+    setState(() {
+      final task = _tasks[index];
+      _tasks[index] = task.copyWith(completed: !task.completed);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +64,10 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final task = _tasks[index];
 
-          return TaskCard(task: task);
+          return TaskCard(
+            task: task,
+            onToggleCompleted: () => _toggleTaskCompleted(index),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
