@@ -1,3 +1,5 @@
+import 'package:corso/features/tasks/task_database_factory.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -18,11 +20,21 @@ class TaskDatabase {
   }
 
   Future<Database> _initDatabase() async {
-    final databasePath = await getDatabasesPath();
+    final databaseFactory = getDatabaseFactory();
 
-    final path = join(databasePath, 'taskflow.db');
+    final String path;
 
-    return openDatabase(path, version: 1, onCreate: _createDatabase);
+    if (kIsWeb) {
+      path = 'taskflow.db';
+    } else {
+      final databasePath = await getDatabasesPath();
+      path = join(databasePath, 'taskflow.db');
+    }
+
+    return databaseFactory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(version: 1, onCreate: _createDatabase),
+    );
   }
 
   Future<void> _createDatabase(Database db, int version) async {
